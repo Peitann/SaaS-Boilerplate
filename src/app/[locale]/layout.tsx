@@ -1,11 +1,17 @@
 import '@/styles/global.css';
+// Ensure plugins register to areas on import
+import '@/core/bootstrap';
 
 import type { Metadata } from 'next';
+import dynamic from 'next/dynamic';
 import { NextIntlClientProvider, useMessages } from 'next-intl';
 import { unstable_setRequestLocale } from 'next-intl/server';
 
 import { DemoBadge } from '@/components/DemoBadge';
+import { getAreaComponents } from '@/core/areaManager';
 import { AllLocales } from '@/utils/AppConfig';
+
+const ThemeHeader = dynamic(() => import('@/components/ThemeHeader'), { ssr: false });
 
 export const metadata: Metadata = {
   icons: [
@@ -58,7 +64,20 @@ export default function RootLayout(props: {
           locale={props.params.locale}
           messages={messages}
         >
-          {props.children}
+          <div className="mx-auto max-w-screen-xl px-3">
+            {/* Theme-aware header (loads from src/themes/<theme>/Header.tsx) */}
+            <div>
+              <ThemeHeader />
+            </div>
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr,300px]">
+              <main>{props.children}</main>
+              <aside className="space-y-4">
+                {getAreaComponents('sidebar').map(c => (
+                  <div key={c.id ?? Math.random()}>{c.render()}</div>
+                ))}
+              </aside>
+            </div>
+          </div>
 
           <DemoBadge />
         </NextIntlClientProvider>

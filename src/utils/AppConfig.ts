@@ -7,6 +7,8 @@ const localePrefix: LocalePrefix = 'as-needed';
 // FIXME: Update this configuration file based on your project information
 export const AppConfig = {
   name: 'SaaS Template',
+  // Default visual theme name. Change this to switch theme folder used by ThemeRenderer.
+  theme: 'default',
   locales: [
     {
       id: 'en',
