@@ -1,5 +1,6 @@
 import '@/styles/global.css';
 
+import { ClerkProvider } from '@clerk/nextjs';
 import type { Metadata } from 'next';
 import { NextIntlClientProvider, useMessages } from 'next-intl';
 import { unstable_setRequestLocale } from 'next-intl/server';
@@ -54,17 +55,20 @@ export default function RootLayout(props: {
   return (
     <html lang={props.params.locale} suppressHydrationWarning>
       <body className="bg-background text-foreground antialiased" suppressHydrationWarning>
-        {/* PRO: Dark mode support for Shadcn UI */}
-        <ThemeProvider>
-          <NextIntlClientProvider
-            locale={props.params.locale}
-            messages={messages}
-          >
-            {props.children}
+        {/* Clerk Provider wraps the whole app so SignedIn/SignedOut and auth buttons work */}
+        <ClerkProvider>
+          {/* PRO: Dark mode support for Shadcn UI */}
+          <ThemeProvider>
+            <NextIntlClientProvider
+              locale={props.params.locale}
+              messages={messages}
+            >
+              {props.children}
 
-            <DemoBadge />
-          </NextIntlClientProvider>
-        </ThemeProvider>
+              <DemoBadge />
+            </NextIntlClientProvider>
+          </ThemeProvider>
+        </ClerkProvider>
       </body>
     </html>
   );

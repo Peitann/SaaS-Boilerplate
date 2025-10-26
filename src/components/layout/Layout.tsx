@@ -1,19 +1,21 @@
 'use client';
 
-import { useThemeSafe } from '@/core/theme/ThemeContext';
-import { regionManager } from '@/core/regions/regionManager';
-import { type ReactNode, useEffect, useState } from 'react';
 import type React from 'react';
+import { type ReactNode, useEffect, useState } from 'react';
 
-interface LayoutProps {
+import { regionManager } from '@/core/regions/regionManager';
+import { useThemeSafe } from '@/core/theme/ThemeContext';
+
+type LayoutProps = {
   title?: string;
   children: ReactNode;
   regions?: {
     [regionName: string]: ReactNode;
   };
-}
+};
+const EMPTY_REGIONS: Readonly<Record<string, ReactNode>> = Object.freeze({});
 
-export default function Layout({ title, children, regions = {} }: LayoutProps) {
+export default function Layout({ title, children, regions = EMPTY_REGIONS }: LayoutProps) {
   const { theme } = useThemeSafe();
   const [mounted, setMounted] = useState(false);
   const [Navbar, setNavbar] = useState<React.ComponentType | null>(null);
@@ -24,9 +26,18 @@ export default function Layout({ title, children, regions = {} }: LayoutProps) {
     setMounted(true);
   }, []);
 
+  // Set document title on client to avoid SSR/head tag mismatch
+  useEffect(() => {
+    if (title) {
+      document.title = title;
+    }
+  }, [title]);
+
   // Dynamically load Navbar and Footer based on active theme (client-side only)
   useEffect(() => {
-    if (!mounted) return;
+    if (!mounted) {
+      return;
+    }
 
     const loadPartials = async () => {
       try {
@@ -65,14 +76,14 @@ export default function Layout({ title, children, regions = {} }: LayoutProps) {
   // Render region helper
   const renderRegion = (regionName: string) => {
     const widgets = regionManager.getRegion(regionName);
-    
+
     if (widgets.length === 0) {
       return null;
     }
 
     return (
       <div className="region-container" data-region={regionName}>
-        {widgets.map((widget) => (
+        {widgets.map(widget => (
           <div key={widget.id} className="region-widget">
             {widget.component}
           </div>
@@ -82,23 +93,20 @@ export default function Layout({ title, children, regions = {} }: LayoutProps) {
   };
 
   return (
-    <div className="layout-wrapper min-h-screen flex flex-col">
-      {/* Document Title */}
-      {title && (
-        <head>
-          <title>{title}</title>
-        </head>
-      )}
-
+    <div className="layout-wrapper flex min-h-screen flex-col">
       {/* Navbar */}
       <header className="layout-header">
-        {!mounted ? (
-          <div className="h-16 bg-gray-100 dark:bg-gray-800 animate-pulse" />
-        ) : Navbar ? (
-          <Navbar />
-        ) : (
-          <div className="h-16 bg-gray-100 dark:bg-gray-800 animate-pulse" />
-        )}
+        {!mounted
+          ? (
+              <div className="h-16 animate-pulse bg-gray-100 dark:bg-gray-800" />
+            )
+          : Navbar
+            ? (
+                <Navbar />
+              )
+            : (
+                <div className="h-16 animate-pulse bg-gray-100 dark:bg-gray-800" />
+              )}
       </header>
 
       {/* Main Content with Regions */}
@@ -107,7 +115,7 @@ export default function Layout({ title, children, regions = {} }: LayoutProps) {
           {/* Top Region */}
           {renderRegion('top')}
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
             {/* Sidebar Left */}
             {regionManager.hasWidgets('sidebar-left') && (
               <aside className="lg:col-span-3">
@@ -120,8 +128,8 @@ export default function Layout({ title, children, regions = {} }: LayoutProps) {
             {/* Main Content */}
             <div
               className={
-                regionManager.hasWidgets('sidebar-left') ||
-                regionManager.hasWidgets('sidebar-right')
+                regionManager.hasWidgets('sidebar-left')
+                || regionManager.hasWidgets('sidebar-right')
                   ? 'lg:col-span-6'
                   : 'lg:col-span-12'
               }
@@ -153,13 +161,17 @@ export default function Layout({ title, children, regions = {} }: LayoutProps) {
 
       {/* Footer */}
       <footer className="layout-footer mt-auto">
-        {!mounted ? (
-          <div className="h-20 bg-gray-100 dark:bg-gray-800 animate-pulse" />
-        ) : Footer ? (
-          <Footer />
-        ) : (
-          <div className="h-20 bg-gray-100 dark:bg-gray-800 animate-pulse" />
-        )}
+        {!mounted
+          ? (
+              <div className="h-20 animate-pulse bg-gray-100 dark:bg-gray-800" />
+            )
+          : Footer
+            ? (
+                <Footer />
+              )
+            : (
+                <div className="h-20 animate-pulse bg-gray-100 dark:bg-gray-800" />
+              )}
       </footer>
     </div>
   );

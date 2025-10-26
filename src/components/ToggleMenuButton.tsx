@@ -15,6 +15,7 @@ const ToggleMenuButtonInternal = (
   ref?: ForwardedRef<HTMLButtonElement>,
 ) => (
   <Button
+    type="button"
     className="p-2 focus-visible:ring-offset-0"
     variant="ghost"
     ref={ref}
